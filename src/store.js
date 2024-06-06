@@ -1,6 +1,14 @@
 import { applyNodeChanges, applyEdgeChanges } from "reactflow";
 import { nanoid } from "nanoid";
 import { create } from "zustand";
+import {
+  updateAudioNode,
+  removeAudioNode,
+  connect,
+  isRunning,
+  toggleAudio,
+  createAudioNode,
+} from "./audio";
 
 export const useStore = create((set, get) => ({
   nodes: [
@@ -24,10 +32,38 @@ export const useStore = create((set, get) => ({
     },
   ],
   edges: [],
-  isRunning: false,
+  isRunning: isRunning,
 
   toggleAudio() {
-    set({ isRunning: !get().isRunning });
+    toggleAudio().then(() => {
+      set({ isRunning: isRunning() });
+    });
+  },
+
+  createNode(type) {
+    const id = nanoid();
+
+    switch (type) {
+      case "osc": {
+        const data = { frequency: 440, type: "sine" };
+        const position = { x: 0, y: 0 };
+
+        createAudioNode(id, type, data);
+        set({ nodes: [...get().nodes, { id, type, data, position }] });
+
+        break;
+      }
+
+      case "amp": {
+        const data = { gain: 0.5 };
+        const position = { x: 0, y: 0 };
+
+        createAudioNode(id, type, data);
+        set({ nodes: [...get().nodes, { id, type, data, position }] });
+
+        break;
+      }
+    }
   },
 
   onNodesChange(changes) {
@@ -47,13 +83,21 @@ export const useStore = create((set, get) => ({
     const edge = { id, ...data };
 
     set({ edges: [edge, ...get().edges] });
+    connect(data.source, data.target);
   },
 
   updateNode(id, data) {
+    updateAudioNode(id, data);
     set({
       nodes: get().nodes.map((node) =>
         node.id === id ? { ...node, data: { ...node.data, ...data } } : node
       ),
     });
+  },
+
+  removeNodes(nodes) {
+    for (const { id } of nodes) {
+      removeAudioNode(id);
+    }
   },
 }));

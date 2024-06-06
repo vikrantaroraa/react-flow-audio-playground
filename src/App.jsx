@@ -1,4 +1,4 @@
-import ReactFlow, { Background } from "reactflow";
+import ReactFlow, { Panel, Background } from "reactflow";
 import "./App.css";
 import { shallow } from "zustand/shallow";
 
@@ -14,6 +14,8 @@ const selector = (store) => ({
   onNodesChange: store.onNodesChange,
   onEdgesChange: store.onEdgesChange,
   addEdge: store.addEdge,
+  onNodesDelete: store.removeNodes,
+  createNode: store.createNode,
 });
 
 const nodeTypes = {
@@ -32,7 +34,12 @@ function App() {
       onNodesChange={store.onNodesChange}
       onEdgesChange={store.onEdgesChange}
       onConnect={store.addEdge}
+      onNodesDelete={store.onNodesDelete}
     >
+      <Panel position="top-right">
+        <button onClick={() => store.createNode("osc")}>osc</button>
+        <button onClick={() => store.createNode("amp")}>amp</button>
+      </Panel>
       <Background />
     </ReactFlow>
   );
